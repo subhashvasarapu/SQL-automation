@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.title { 
+ max-width: 400px;
+                margin-left:auto;
+                margin-right:auto;
+                display:block;
+                margin-top:22%;
+                margin-bottom:20%;
+    margin: auto;
+    padding: 20px;
+    color: #1A1A1A 
+   }
+body  {
+background-size: cover;
+background-image: url("paper.jpg");
+
+
+    background-color: sky blue;
+}
+.content {
+    max-width: 500px;
+                margin-left:auto;
+                margin-right:auto;
+                display:block;
+                margin-top:22%;
+                margin-bottom:0%;
+    margin: auto;
+    padding: 50px;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+<title>HTA Test</title>
+<HTA:APPLICATION 
+     APPLICATIONNAME="HTA Test"
+     SCROLL="yes"
+     SINGLEINSTANCE="yes"
+     WINDOWSTATE="maximize"
+>
+</head>
+<body>
+
+<script language="vbscript">
+
+sub showdatabase()
+                server = document.getElementById("Env").value
+                If server = "DELPHIXSQLTST02" Then
+                                document.getElementById("Database_Test").style.visibility = "visible"
+                End If
+end sub
+
+
+                
+sub listdb()
+Envn = document.getElementById("Env").value
+
+set WshShell = CreateObject("WScript.Shell")
+
+WshShell.Run "runas /savecred /user:ABERDEEN\admin-sva ""sqlcmd  -S " & Envn & " -i C:\temp\databaselist.sql -o C:\temp\dblist.txt"
+
+
+ 
+    End sub
+                
+                
+                
+                
+                
+                
+                
+                Sub dropdown()
+
+       LoadDropDown
+
+    End Sub
+                
+                                
+                
+                
+Sub LoadDropDown
+
+Dim FSO
+
+       Set FSO   = CreateObject("Scripting.FileSystemObject")
+
+       Set NewFile = FSO.OpenTextFile("C:\temp\dblist.txt")
+
+       strPhoneNumbers = NewFile.ReadAll
+
+       NewFile.Close
+
+      arrPhoneNumbers = Split(strPhoneNumbers,vbNewLine)
+
+       For Each strNumber in arrPhoneNumbers
+
+          Set FSOOption = Document.createElement("OPTION")
+
+          FSOOption.Text = strNumber
+
+          FSOOption.Value = strNumber
+
+          PhoneNumbers.Add(FSOOption)
+
+       Next
+
+    End Sub
+
+                </script>
+
+
+<body>
+
+    <select name="PhoneNumbers">
+
+    </select>
+
+</body>
+
+
+
+
+
+
+                
+
+
+sub runsql()
+Envn = document.getElementById("Env").value
+DBname = document.getElementById("Database_Test").value
+Path = document.getElementById("path_input").value
+mks_output = document.getElementById("path_output").value
+Name = document.getElementById("employee_name").value
+
+
+msgbox "runas /savecred /user:ABERDEEN\admin-sva ""sqlcmd  -S " & Envn & " -d "& DBname &" -i " & Path & " -o " & mks_output &""
+
+
+
+
+
+Dim FSO
+Set FSO = CreateObject("Scripting.FileSystemObject")
+Set OutPutFile = FSO.OpenTextFile("C:\temp\test1.csv" ,8 , True)
+OutPutFile.WriteLine "DATE,TIME,USER,SERVER,DATABASE,PATH"
+
+OutPutFile.WriteLine(date & "," & time & "," & Name & "," & Envn & "," & DBname & "," & mks_output)
+Set FSO= Nothing
+
+set WshShell = CreateObject("WScript.Shell")
+
+WshShell.Run "runas /savecred /user:ABERDEEN\admin-sva ""sqlcmd  -S " & Envn & " -d "& DBname &" -i " & Path & " -o " & mks_output &""
+Dim dteWait
+dteWait = DateAdd("s", 1, Now())
+Do Until (Now() > dteWait)
+Loop
+
+
+document.getElementById("output").style.visibility = "visible"
+Set fso = CreateObject("Scripting.FileSystemObject")
+Set file = fso.OpenTextFile(mks_output, 1)
+
+content = file.ReadAll
+                
+document.getElementById("output").innerHTML = content
+               
+end sub
+</script>
+
+
+<body>
+
+    <select name="DatabaseList">
+
+    </select>
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+Server Name:<br>
+                <select id="Env" onchange="listdb()">
+                  <option value="LONBSCADSQLBL01">BaseLine</option>
+                  <option value="LONBSCADSQLEE01">E2E</option>
+                  <option value="ADWDBUAT">UAT</option>
+                  <option value="DELPHIXSQLTST02">Test</option>
+                </select>
+  <br>
+  
+  
+
+
+Database:<br>
+                
+                <select id="Database_E2E" style="visibility: hidden;">
+                  <option value="E2E_db">E2E_db</option>
+                  <option value="E2E_db">E2E_db</option>
+                  <option value="E2E_db">E2E_db</option>
+                </select>
+                <select id="Database_UAT" style="visibility: hidden;">
+                  <option value="UAT_DB">UAT_db</option>
+                  <option value="UAT_DB">UAT_db</option>
+                  <option value="UAT_DB">UAT_db</option>
+                </select>
+                <select id="Database_Test" onclick="dropdown()">
+                 
+                </select>             
+  <br>  
+
+Name:<br>
+  <input type="text" id="employee_name"><br/>
+  
+  
+Path:<br>
+  <input type="text" id="path_input"><br/>
+  
+  output:<br>
+  <input type="text" id="path_output"><br/>
+  
+  
+ 
+  
+  <input type="submit" value="Submit" onclick="runsql()">
+
+
+
+<textarea id="output" rows="4" cols="50" style="visibility: hidden;">
+
+</textarea>
+
+  
+</body>
