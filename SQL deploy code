@@ -1,168 +1,125 @@
-<!DOCTYPE html>
+
 <html>
-<head>
-<style>
-.title { 
- max-width: 400px;
-                margin-left:auto;
-                margin-right:auto;
-                display:block;
-                margin-top:22%;
-                margin-bottom:20%;
-    margin: auto;
-    padding: 20px;
-    color: #1A1A1A 
-   }
-body  {
-background-size: cover;
-background-image: url("paper.jpg");
 
+<body>
+<div id="bg"><img src="high.jpg" width="100%" height="100%" alt=""></div>
+<div id="data"><p></p></div>
+  
 
-    background-color: sky blue;
-}
-.content {
-    max-width: 500px;
-                margin-left:auto;
-                margin-right:auto;
-                display:block;
-                margin-top:22%;
-                margin-bottom:0%;
-    margin: auto;
-    padding: 50px;
-}
-</style>
-
-
-
-
-
-
-
-
-
-
-
+</body>
+</html>
 
 
 
 
 
 <head>
-<title>HTA Test</title>
+<title>SQL Automation</title>
 <HTA:APPLICATION 
-     APPLICATIONNAME="HTA Test"
-     SCROLL="yes"
+     APPLICATIONNAME="SQL Automation"
+     SCROLL="no"
      SINGLEINSTANCE="yes"
-     WINDOWSTATE="maximize"
+     WINDOWSTATE="normal"
+                
 >
 </head>
+
 <body>
 
 <script language="vbscript">
-
-sub showdatabase()
-                server = document.getElementById("Env").value
-                If server = "DELPHIXSQLTST02" Then
-                                document.getElementById("Database_Test").style.visibility = "visible"
-                End If
-end sub
 
 
                 
 sub listdb()
 Envn = document.getElementById("Env").value
 
+
 set WshShell = CreateObject("WScript.Shell")
+
 
 WshShell.Run "runas /savecred /user:ABERDEEN\admin-sva ""sqlcmd  -S " & Envn & " -i C:\temp\databaselist.sql -o C:\temp\dblist.txt"
 
 
- 
-    End sub
-                
-                
-                
-                
-                
-                
-                
-                Sub dropdown()
+Dim dteWait
+dteWait = DateAdd("s", 1, Now())
+Do Until (Now() > dteWait)
+Loop
 
-       LoadDropDown
+Dim FSO2
 
-    End Sub
-                
-                                
-                
-                
-Sub LoadDropDown
+       Set FSO2   = CreateObject("Scripting.FileSystemObject")
 
-Dim FSO
-
-       Set FSO   = CreateObject("Scripting.FileSystemObject")
-
-       Set NewFile = FSO.OpenTextFile("C:\temp\dblist.txt")
+       Set NewFile = FSO2.OpenTextFile("C:\temp\dblist.txt")
+                   
+                   msgbox "Db list updated"
 
        strPhoneNumbers = NewFile.ReadAll
 
        NewFile.Close
+                   
+   For Each objOption in PhoneNumbers.Options
 
-      arrPhoneNumbers = Split(strPhoneNumbers,vbNewLine)
+            objOption.RemoveNode
+
+
+    Next
+
+      
+                  arrPhoneNumbers = Split(strPhoneNumbers,vbNewLine)
 
        For Each strNumber in arrPhoneNumbers
 
-          Set FSOOption = Document.createElement("OPTION")
+          Set FSO2Option = Document.createElement("OPTION")
 
-          FSOOption.Text = strNumber
+          FSO2Option.Text = strNumber
 
-          FSOOption.Value = strNumber
+          FSO2Option.Value = strNumber
 
-          PhoneNumbers.Add(FSOOption)
+          PhoneNumbers.Add(FSO2Option)
 
        Next
 
-    End Sub
-
-                </script>
-
-
-<body>
-
-    <select name="PhoneNumbers">
-
-    </select>
-
-</body>
-
-
-
-
-
-
+    End sub
                 
-
-
+                                                
 sub runsql()
 Envn = document.getElementById("Env").value
 DBname = document.getElementById("Database_Test").value
 Path = document.getElementById("path_input").value
 mks_output = document.getElementById("path_output").value
-Name = document.getElementById("employee_name").value
+
+Requester = document.getElementById("mail_name").value
+Priority = document.getElementById("scale").value
 
 
-msgbox "runas /savecred /user:ABERDEEN\admin-sva ""sqlcmd  -S " & Envn & " -d "& DBname &" -i " & Path & " -o " & mks_output &""
 
+Dim response
+response = MsgBox("runas /savecred /user:ABERDEEN\admin-sva ""sqlcmd  -S " & Envn & " -d "& DBname &" -i " & Path & " -o " & mks_output &"", vbYesNo, "Think Before You DO")
+If response = vbNo Then
+
+Env.value = ""
+Database_Test.value = ""
+mail_name.value = ""
+scale.value = ""
+path_input.value = ""
+path_output.value = ""
+Exit Sub
+End If
+MsgBox ("You clicked YES.")
+
+Set objSysInfo = CreateObject("ADSystemInfo")
+Set objCurrentUser = GetObject("LDAP://" & objSysInfo.UserName)
+msgbox objCurrentUser.givenName
 
 
 
 
 Dim FSO
 Set FSO = CreateObject("Scripting.FileSystemObject")
-Set OutPutFile = FSO.OpenTextFile("C:\temp\test1.csv" ,8 , True)
-OutPutFile.WriteLine "DATE,TIME,USER,SERVER,DATABASE,PATH"
+Set OutPutFile = FSO.OpenTextFile("C:\temp\test1.csv" , 8 , True)
 
-OutPutFile.WriteLine(date & "," & time & "," & Name & "," & Envn & "," & DBname & "," & mks_output)
-Set FSO= Nothing
+starttime = time
+
 
 set WshShell = CreateObject("WScript.Shell")
 
@@ -180,68 +137,77 @@ Set file = fso.OpenTextFile(mks_output, 1)
 content = file.ReadAll
                 
 document.getElementById("output").innerHTML = content
-               
+
+
+
+
+OutPutFile.WriteLine(date & "," & starttime & "," & objCurrentUser.givenName & "," & Requester & "," & Priority & "," & Envn & "," & DBname & "," & mks_output & "," & time & "," & Timetaken)
+
+Timetaken = time - starttime
+    Set FSO= Nothing           
 end sub
-</script>
 
 
-<body>
-
-    <select name="DatabaseList">
-
-    </select>
-
-</body>
-
-</html>
+                
+                </script>
 
 
 
+<div style="text-align:center;"> Server Name:<br>
+
+<select id="Env" onchange="listdb()">
+    <option value="">Select your option</option>
+    
 
 
-
-
-
-
-
-
-
-
-Server Name:<br>
-                <select id="Env" onchange="listdb()">
+                                                
                   <option value="LONBSCADSQLBL01">BaseLine</option>
                   <option value="LONBSCADSQLEE01">E2E</option>
                   <option value="ADWDBUAT">UAT</option>
                   <option value="DELPHIXSQLTST02">Test</option>
                 </select>
+                                                                
   <br>
   
+ 
+Database Name:<br>
+
+
+    <select id="Database_Test" name="PhoneNumbers" >
+
+    </select>
+
+
+<br>
+
+
+
+
+
   
-
-
-Database:<br>
-                
-                <select id="Database_E2E" style="visibility: hidden;">
-                  <option value="E2E_db">E2E_db</option>
-                  <option value="E2E_db">E2E_db</option>
-                  <option value="E2E_db">E2E_db</option>
-                </select>
-                <select id="Database_UAT" style="visibility: hidden;">
-                  <option value="UAT_DB">UAT_db</option>
-                  <option value="UAT_DB">UAT_db</option>
-                  <option value="UAT_DB">UAT_db</option>
-                </select>
-                <select id="Database_Test" onclick="dropdown()">
-                 
-                </select>             
-  <br>  
-
-Name:<br>
-  <input type="text" id="employee_name"><br/>
   
+  Requester:<br>
+  <input type="text" id="mail_name"><br/>
+  
+  
+  Priority:<br>
+  <select id="scale" >
+  
+  <option value="">Select your option</option>
+    
+
+
+                                                
+                 <option value="HIGH">HIGH</option>
+                  <option value="HIGH">MEDIUM</option>
+                  <option value="HIGH">LOW</option>
+                  
+                </select>
+                                                                <br/>
   
 Path:<br>
   <input type="text" id="path_input"><br/>
+  
   
   output:<br>
   <input type="text" id="path_output"><br/>
@@ -257,5 +223,6 @@ Path:<br>
 
 </textarea>
 
+</div>
   
 </body>
